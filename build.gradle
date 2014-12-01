@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+
+dependencies {
+  compile gradleApi()
+  compile localGroovy()
+}
+
+apply plugin: 'maven'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository( url: uri('/tmp/deploy-repo'))
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.2.1'
+}
+
