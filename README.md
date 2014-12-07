@@ -83,7 +83,7 @@ For more information, please visit [Graphviz home page](http://www.graphviz.org)
 The plugin installs itself as a listener to Gradle lifecycle via `gradle.taskGraph.whenReady`. During execution it obtains reference to task execution graph via reflection and performs a walk through the graph.
 
 
-# Thanks
+# Acknowledgements
 Based on idea published by Code Wader - http://codewader.blogspot.com/2011/11/show-gradle-dependencies-as-graphwiz.html
 
 
