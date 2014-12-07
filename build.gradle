@@ -1,11 +1,13 @@
-apply plugin: 'groovy'
+plugins {
+    id 'groovy'
+    id 'nu.studer.plugindev' version '1.0.3'
+    id 'maven'
+}
 
 dependencies {
   compile gradleApi()
   compile localGroovy()
 }
-
-apply plugin: 'maven'
 
 repositories {
   mavenCentral()
@@ -15,6 +17,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
+/* Useful for local development */
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -23,6 +26,29 @@ uploadArchives {
     }
 }
 
+/* Configure publishing into bintray via plugindev. */
+plugindev {
+    pluginImplementationClass 'cz.malohlava.VisTaskExecGraphPlugin'
+    pluginDescription 'Gradle plugin exporting task execution graph into .dot file.'
+    pluginLicenses 'Apache-2.0'
+    pluginTags 'gradle', 'plugin', 'graphviz', 'visteg'
+    authorId 'mmalohlava'
+    authorName 'Michal Malohlava'
+    authorEmail 'michal.malohlava@gmail.com'
+    projectUrl 'https://github.com/mmalohlava/gradle-visteg'
+    projectInceptionYear '2014'
+    done() // do not omit this
+}
+
+/* Credentials are stored in ~./gradle/gradle.properties file. */
+bintray {
+    user = "$bintrayUser"
+    key = "$bintrayApiKey"
+    pkg.repo = 'gradle-plugins'
+}
+
+
+// Gradle wrapper generator
 task wrapper(type: Wrapper) {
   gradleVersion = '2.2.1'
 }
