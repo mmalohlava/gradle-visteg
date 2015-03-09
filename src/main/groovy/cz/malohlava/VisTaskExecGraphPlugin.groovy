@@ -134,6 +134,7 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
                              StringBuilder sb,  String ls, TaskInfo entry, Set<Integer> edges) {
         def q = new LinkedList<TaskInfo>()
+        def seen = new HashSet<String>()
         boolean colouredNodes = vistegExt.colouredNodes
         boolean colouredEdges = vistegExt.colouredEdges
         String colorscheme = vistegExt.colorscheme=="random" ? null : vistegExt.colorscheme
@@ -142,6 +143,12 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
             def ti = q.remove()
             def tproject = ti.task.project
             def tname = ti.task.path
+
+            if (seen.contains(tname)) {
+                continue
+            }
+            seen.add(tname)
+
             def tcolor = colorscheme==null ? getRandomColor(tproject) : getSchemeColor(tproject, colorscheme)
             def nodeKind = ti.dependencyPredecessors.empty ? NodeKind.START
                     : ti.dependencySuccessors.empty ? NodeKind.END : NodeKind.INNER
