@@ -50,6 +50,6 @@ bintray {
 
 // Gradle wrapper generator
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.2.1'
+  gradleVersion = '2.3'
 }
 
