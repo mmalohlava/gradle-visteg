@@ -68,14 +68,15 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
         project.extensions.create("visteg", VisTegPluginExtension)
 
         VisTegPluginExtension vistegExt = project.visteg
-        // Unify parameters
-        if (vistegExt.colorscheme==null ||
-            !SUPPORTED_COLOR_SCHEMAS.containsKey(vistegExt.colorscheme)) {
-            LOG.warn("VisTEG colorscheme is not specified - falling back to 'spectral11' color scheme")
-            vistegExt.colorscheme = 'spectral11'
-        }
-        if (vistegExt.enabled) {
-            project.gradle.taskGraph.whenReady { g ->
+
+        project.gradle.taskGraph.whenReady { g ->
+            if (vistegExt.enabled) {
+                // Unify parameters
+                if (vistegExt.colorscheme==null ||
+                    !SUPPORTED_COLOR_SCHEMAS.containsKey(vistegExt.colorscheme)) {
+                    LOG.warn("VisTEG colorscheme is not specified - falling back to 'spectral11' color scheme")
+                    vistegExt.colorscheme = 'spectral11'
+                }
                 // Access private variables of tasks graph
                 def tep = getTEP(g)
                 // Execution starts on these tasks
