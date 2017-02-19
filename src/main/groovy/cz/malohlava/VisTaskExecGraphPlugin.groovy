@@ -1,5 +1,7 @@
 package cz.malohlava
 
+import java.lang.reflect.Field
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
@@ -9,7 +11,7 @@ import org.gradle.execution.taskgraph.TaskDependencyGraph
 import org.gradle.execution.taskgraph.TaskExecutionPlan
 import org.gradle.execution.taskgraph.TaskInfo
 
-import java.lang.reflect.Field
+import groovy.transform.Memoized
 
 /**
  * VisTEG
@@ -67,15 +69,16 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.create("visteg", VisTegPluginExtension)
 
-        VisTegPluginExtension vistegExt = project.visteg
-        // Unify parameters
-        if (vistegExt.colorscheme==null ||
-            !SUPPORTED_COLOR_SCHEMAS.containsKey(vistegExt.colorscheme)) {
-            LOG.warn("VisTEG colorscheme is not specified - falling back to 'spectral11' color scheme")
-            vistegExt.colorscheme = 'spectral11'
-        }
-        if (vistegExt.enabled) {
-            project.gradle.taskGraph.whenReady { g ->
+        project.gradle.taskGraph.whenReady { g ->
+
+            VisTegPluginExtension vistegExt = project.visteg
+            // Unify parameters
+            if (vistegExt.colorscheme == null ||
+                    (vistegExt.colorscheme != 'random' && !SUPPORTED_COLOR_SCHEMAS.containsKey(vistegExt.colorscheme))) {
+                LOG.warn("VisTEG colorscheme is not specified - falling back to 'spectral11' color scheme")
+                vistegExt.colorscheme = 'spectral11'
+            }
+            if (vistegExt.enabled) {
                 // Access private variables of tasks graph
                 def tep = getTEP(g)
                 // Execution starts on these tasks
@@ -84,16 +87,18 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
                 def edges = [] as Set
                 // Create output buffer
                 def dotGraph = new StringBuilder("digraph compile { ").append(ls)
-                if (vistegExt!='random') {
+                if (vistegExt.colorscheme != 'random') {
                     dotGraph.append("colorscheme=${vistegExt.colorscheme};$ls")
                 }
+                dotGraph.append("rankdir=${vistegExt.rankdir};$ls")
+                dotGraph.append("splines=${vistegExt.splines};$ls")
                 // Generate graph for each input
                 entryTasks.each { et ->
                     printGraph(vistegExt, dotGraph, ls, et, edges)
                 }
                 // Entry tasks nodes have the same priority
                 dotGraph.append("{ rank=same; ")
-                entryTasks.each { et -> dotGraph.append('"').append(et.getTask().getPath()).append("\" ")}
+                entryTasks.each { et -> dotGraph.append('"').append(et.task.path).append("\" ") }
                 dotGraph.append("}").append(ls)
                 // Finalize graph
                 dotGraph.append("}").append(ls)
@@ -114,32 +119,32 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
 
     private TaskExecutionPlan getTEP(TaskExecutionGraph teg) {
         Field f = teg.getClass().getDeclaredField("taskExecutionPlan")
-        f.setAccessible(true)
+        f.accessible = true
         f.get(teg)
     }
 
     private Set<TaskInfo> getEntryTasks(TaskExecutionPlan tep) {
         Field f = tep.getClass().getDeclaredField("entryTasks")
-        f.setAccessible(true)
-        Set<org.gradle.execution.taskgraph.TaskInfo> entryTasks = f.get(tep)
+        f.accessible = true
+        Set<TaskInfo> entryTasks = f.get(tep)
         entryTasks
     }
 
     private TaskDependencyGraph getTDG(TaskExecutionPlan tep) {
         Field f2 = tep.getClass().getDeclaredField("graph")
-        f2.setAccessible(true)
+        f2.accessible = true
         f2.get(tep)
     }
 
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
-                             StringBuilder sb,  String ls, TaskInfo entry, Set<Integer> edges) {
+                             StringBuilder sb, String ls, TaskInfo entry, Set<Integer> edges) {
         def q = new LinkedList<TaskInfo>()
         def seen = new HashSet<String>()
         boolean colouredNodes = vistegExt.colouredNodes
         boolean colouredEdges = vistegExt.colouredEdges
-        String colorscheme = vistegExt.colorscheme=="random" ? null : vistegExt.colorscheme
+        String colorscheme = vistegExt.colorscheme == "random" ? null : vistegExt.colorscheme
         q.add(entry)
-        while (!q.isEmpty()) {
+        while (!q.empty) {
             def ti = q.remove()
             def tproject = ti.task.project
             def tname = ti.task.path
@@ -149,34 +154,64 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
             }
             seen.add(tname)
 
-            def tcolor = colorscheme==null ? getRandomColor(tproject) : getSchemeColor(tproject, colorscheme)
+            def tcolor = colorscheme == null ? getRandomColor(tproject) : getSchemeColor(tproject, colorscheme, vistegExt.color)
             def nodeKind = ti.dependencyPredecessors.empty ? NodeKind.START
                     : ti.dependencySuccessors.empty ? NodeKind.END : NodeKind.INNER
 
             ti.dependencySuccessors.each { succ ->
                 def sname = succ.task.path
-                if (edges.add( edgeHash(tname, sname) )) {
+                if (edges.add(edgeHash(tname, sname))) {
                     // Generate edge between two nodes
                     sb.append("\"$tname\" -> \"$sname\"")
                     if (colouredEdges) {
                         sb.append(" [")
-                        if(colorscheme!=null) sb.append("colorscheme=\"${colorscheme}\",")
+                        if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
                         sb.append("color=${tcolor}]")
                     }
                     sb.append(";").append(ls)
+                }
+            }
+            if (vistegExt.includeMustRunAfter) {
+                ti.mustSuccessors.each { succ ->
+                    def sname = succ.task.path
+                    if (edges.add(edgeHash(tname, sname))) {
+                        // Generate edge between two nodes
+                        sb.append("\"$tname\" -> \"$sname\"")
+                        if (colouredEdges) {
+                            sb.append(" [style=dashed,")
+                            if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
+                            sb.append("color=${tcolor}]")
+                        }
+                        sb.append(";").append(ls)
+                    }
+                }
+            }
+            if (vistegExt.includeShouldRunAfter) {
+                ti.shouldSuccessors.each { succ ->
+                    def sname = succ.task.path
+                    if (edges.add(edgeHash(tname, sname))) {
+                        // Generate edge between two nodes
+                        sb.append("\"$tname\" -> \"$sname\"")
+                        if (colouredEdges) {
+                            sb.append(" [style=dotted,")
+                            if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
+                            sb.append("color=${tcolor}]")
+                        }
+                        sb.append(";").append(ls)
+                    }
                 }
             }
             sb.append("\"$tname\"")
             sb.append(" [")
             sb.append("shape=\"")
             switch (nodeKind) {
-                case NodeKind.START: sb.append(vistegExt.startNodeShape); break;
-                case NodeKind.INNER: sb.append(vistegExt.nodeShape); break;
-                case NodeKind.END: sb.append(vistegExt.endNodeShape); break;
+                case NodeKind.START: sb.append(vistegExt.startNodeShape); break
+                case NodeKind.INNER: sb.append(vistegExt.nodeShape); break
+                case NodeKind.END: sb.append(vistegExt.endNodeShape); break
             }
             sb.append("\",")
             if (colouredNodes) {
-                if(colorscheme!=null) sb.append("colorscheme=\"${colorscheme}\",")
+                if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
                 sb.append("style=filled,color=$tcolor]")
             }
             sb.append(";").append(ls)
@@ -185,23 +220,27 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
         sb
     }
 
-    int getSchemeColor(Project p, String scheme) {
-        int schemeLen = SUPPORTED_COLOR_SCHEMAS.get(scheme)
-        int color = Math.abs(p.hashCode() % schemeLen) + 1 // schemas are 1-based
-        return color
+    @Memoized
+    int getSchemeColor(Project p, String scheme, int configColor) {
+        int schemeLen = SUPPORTED_COLOR_SCHEMAS[scheme]
+        if (configColor == -1) {
+            return Math.abs(p.hashCode() % schemeLen) + 1 // schemas are 1-based
+        } else {
+            return Math.min(configColor, schemeLen)
+        }
     }
 
     String getRandomColor(Project p) {
         // Generate pastel colors
         // See: http://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
-        def l = ( Math.abs(p.path.hashCode() >> 16) % 50) + 50
-        def h = ( Math.abs(p.path.hashCode() ^ 0xFFFFFFFF00000000) % 50) + 50
-        def m = ( Math.abs(p.path.hashCode() / 13 ) % 50) + 50
+        def l = (Math.abs(p.path.hashCode() >> 16) % 50) + 50
+        def h = (Math.abs(p.path.hashCode() ^ 0xFFFFFFFF00000000) % 50) + 50
+        def m = (Math.abs(p.path.hashCode() / 13) % 50) + 50
         return "\"0.${m} 0.${h} 0.${l}\""
     }
 
-    String edgeHash(String from, String to) {
-        return from.hashCode()*37 + to.hashCode()
+    int edgeHash(String from, String to) {
+        return from.hashCode() * 37 + to.hashCode()
     }
 
     enum NodeKind {
@@ -216,15 +255,25 @@ class VisTegPluginExtension {
     boolean colouredNodes = true
     /** Produces coloured nodes */
     boolean colouredEdges = true
+    /** Includes task ordering info mustRunAfter*/
+    boolean includeMustRunAfter = true
+    /** Includes task ordering info shouldRunAfter*/
+    boolean includeShouldRunAfter = true
     /** Output file destination file */
     String destination = 'build/reports/visteg.dot'
     String exporter = 'dot'
     /** Name of used color scheme - see {@link "http://www.graphviz.org/content/color-names"} for possible values. */
     String colorscheme = 'spectral11'
+    /** Force node color, use -1 for semi-random generation*/
+    int color = -1
     /** Shape of inner node - see {@link "http://www.graphviz.org/content/node-shapes"} for possible values. */
     String nodeShape = 'box'
     /** Shape of start node - see {@link "http://www.graphviz.org/content/node-shapes"} for possible values. */
     String startNodeShape = 'hexagon'
     /** Shape of end node - see {@link "http://www.graphviz.org/content/node-shapes"} for possible values. */
     String endNodeShape = 'doubleoctagon'
+    /** Sets direction of graph layout. {@link "http://www.graphviz.org/doc/info/attrs.html#a:rankdir"}  for possible values.*/
+    String rankdir = 'TB'
+    /** Controls how, and if, edges are represented. {@link "http://www.graphviz.org/doc/info/attrs.html#a:splines"}  for possible values.*/
+    String splines = 'spline'
 }
