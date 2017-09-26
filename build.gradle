@@ -41,12 +41,13 @@ plugindev {
 }
 
 /* Credentials are stored in ~./gradle/gradle.properties file. */
-bintray {
-    user = "$bintrayUser"
-    key = "$bintrayApiKey"
-    pkg.repo = 'gradle-plugins'
+if (project.hasProperty('bintrayUser')) {
+    bintray {
+        user = "$bintrayUser"
+        key = "$bintrayApiKey"
+        pkg.repo = 'gradle-plugins'
+    }
 }
-
 
 // Gradle wrapper generator
 task wrapper(type: Wrapper) {

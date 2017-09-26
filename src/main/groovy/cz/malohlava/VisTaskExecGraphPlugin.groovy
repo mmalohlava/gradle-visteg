@@ -7,7 +7,6 @@ import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.execution.taskgraph.TaskDependencyGraph
 import org.gradle.execution.taskgraph.TaskExecutionPlan
 import org.gradle.execution.taskgraph.TaskInfo
 
@@ -71,6 +70,7 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
 
         project.gradle.taskGraph.whenReady { g ->
 
+
             VisTegPluginExtension vistegExt = project.visteg
             // Unify parameters
             if (vistegExt.colorscheme == null ||
@@ -110,7 +110,14 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
 
                 LOG.info("VisTEG: Dependency graph written into $outputFile")
             }
+            if (vistegExt.dryRun) {
+                dryRun(g)
+            }
         }
+    }
+
+    private void dryRun(TaskExecutionGraph taskExecutionGraph) {
+        taskExecutionGraph.allTasks.each { it.enabled = false }
     }
 
     private File getDestination(Project p) {
@@ -118,23 +125,18 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
     }
 
     private TaskExecutionPlan getTEP(TaskExecutionGraph teg) {
-        Field f = teg.getClass().getDeclaredField("taskExecutionPlan")
+        Field f = teg.class.getDeclaredField("taskExecutionPlan")
         f.accessible = true
         f.get(teg)
     }
 
     private Set<TaskInfo> getEntryTasks(TaskExecutionPlan tep) {
-        Field f = tep.getClass().getDeclaredField("entryTasks")
+        Field f = tep.class.getDeclaredField("entryTasks")
         f.accessible = true
         Set<TaskInfo> entryTasks = f.get(tep)
         entryTasks
     }
 
-    private TaskDependencyGraph getTDG(TaskExecutionPlan tep) {
-        Field f2 = tep.getClass().getDeclaredField("graph")
-        f2.accessible = true
-        f2.get(tep)
-    }
 
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
                              StringBuilder sb, String ls, TaskInfo entry, Set<Integer> edges) {
@@ -259,6 +261,8 @@ class VisTegPluginExtension {
     boolean includeMustRunAfter = true
     /** Includes task ordering info shouldRunAfter*/
     boolean includeShouldRunAfter = true
+    /** Gradle 4.+ does not call taskgraph.whenReady anymore if --dry-run is used, so set all tasks to enabled=false*/
+    boolean dryRun = false
     /** Output file destination file */
     String destination = 'build/reports/visteg.dot'
     String exporter = 'dot'
