@@ -25,7 +25,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'cz.malohlava:visteg:1.0.0'
+        classpath 'cz.malohlava:visteg:1.0.3'
     }
 }
 
@@ -36,7 +36,7 @@ apply plugin: 'cz.malohlava.visteg'
 
 ```groovy
 plugins {
-  id 'cz.malohlava.visteg' version '1.0.0'
+  id 'cz.malohlava.visteg' version '1.0.3'
 }
 ```
 
@@ -48,10 +48,10 @@ visteg {
     enabled        = true
     colouredNodes  = true
     colouredEdges  = true
-	destination    = 'build/reports/visteg.dot'
+    destination    = 'build/reports/visteg.dot'
     exporter       = 'dot'
     colorscheme    = 'spectral11'
-	nodeShape      = 'box'
+    nodeShape      = 'box'
     startNodeShape = 'hexagon'
     endNodeShape   = 'doubleoctagon'
 }
