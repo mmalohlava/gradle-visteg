@@ -41,6 +41,7 @@ plugindev {
 }
 
 /* Credentials are stored in ~./gradle/gradle.properties file. */
+
 if (project.hasProperty('bintrayUser')) {
     bintray {
         user = "$bintrayUser"
