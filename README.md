@@ -1,6 +1,14 @@
 Gradle VisTEG
 =============
 
+[![][travis img]][travis]
+[![][license img]][license]
+
+[travis]:https://travis-ci.org/mmalohlava/gradle-visteg
+[travis img]:https://travis-ci.org/mmalohlava/gradle-visteg.svg?branch=master
+[license]:LICENSE
+[license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
+
 # Overview
 VisTeg is a Gradle plugin for exporting task execution graph as `.dot` file.
 
