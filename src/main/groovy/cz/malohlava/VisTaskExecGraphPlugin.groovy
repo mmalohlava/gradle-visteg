@@ -7,8 +7,8 @@ import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.execution.taskgraph.TaskExecutionPlan
-import org.gradle.execution.taskgraph.TaskInfo
+import org.gradle.execution.plan.ExecutionPlan
+import org.gradle.execution.plan.TaskNode
 
 import groovy.transform.Memoized
 
@@ -124,23 +124,23 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
         p.file(p.visteg.destination)
     }
 
-    private TaskExecutionPlan getTEP(TaskExecutionGraph teg) {
-        Field f = teg.class.getDeclaredField("taskExecutionPlan")
+    private ExecutionPlan getTEP(TaskExecutionGraph teg) {
+        Field f = teg.class.getDeclaredField("executionPlan")
         f.accessible = true
         f.get(teg)
     }
 
-    private Set<TaskInfo> getEntryTasks(TaskExecutionPlan tep) {
+    private Set<TaskNode> getEntryTasks(ExecutionPlan tep) {
         Field f = tep.class.getDeclaredField("entryTasks")
         f.accessible = true
-        Set<TaskInfo> entryTasks = f.get(tep)
+        Set<TaskNode> entryTasks = f.get(tep)
         entryTasks
     }
 
 
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
-                             StringBuilder sb, String ls, TaskInfo entry, Set<Integer> edges) {
-        def q = new LinkedList<TaskInfo>()
+                             StringBuilder sb, String ls, TaskNode entry, Set<Integer> edges) {
+        def q = new LinkedList<TaskNode>()
         def seen = new HashSet<String>()
         boolean colouredNodes = vistegExt.colouredNodes
         boolean colouredEdges = vistegExt.colouredEdges
