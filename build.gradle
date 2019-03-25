@@ -50,8 +50,3 @@ if (project.hasProperty('bintrayUser')) {
     }
 }
 
-// Gradle wrapper generator
-task wrapper(type: Wrapper) {
-  gradleVersion = '2.3'
-}
-
