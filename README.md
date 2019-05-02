@@ -25,7 +25,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'cz.malohlava:visteg:1.0.3'
+        classpath 'cz.malohlava:visteg:1.0.4'
     }
 }
 
@@ -36,7 +36,7 @@ apply plugin: 'cz.malohlava.visteg'
 
 ```groovy
 plugins {
-  id 'cz.malohlava.visteg' version '1.0.3'
+  id 'cz.malohlava.visteg' version '1.0.4'
 }
 ```
 
