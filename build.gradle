@@ -1,7 +1,7 @@
 plugins {
+    id 'java-gradle-plugin'
     id 'groovy'
-    id 'nu.studer.plugindev' version '1.0.3'
-    id 'maven'
+    id 'com.gradle.plugin-publish' version '0.10.0'
 }
 
 dependencies {
@@ -17,36 +17,21 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
-/* Useful for local development */
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository( url: uri('/tmp/deploy-repo'))
+/* Configure publishing into Gradle Plugin Portal. */
+pluginBundle {
+    website = 'https://github.com/mmalohlava/gradle-visteg'
+    vcsUrl = 'https://github.com/mmalohlava/gradle-visteg.git'
+    tags = ['gradle', 'graphviz', 'plugin', 'visteg']
+}
+
+gradlePlugin {
+    plugins {
+        vistegPlugin {
+            id = 'cz.malohlava.visteg'
+            displayName = 'Gradle plugin exporting task execution graph into .dot file.'
+            description = 'Gradle plugin exporting task execution graph into .dot file.'
+            implementationClass = 'cz.malohlava.VisTaskExecGraphPlugin'
         }
-    }
-}
-
-/* Configure publishing into bintray via plugindev. */
-plugindev {
-    pluginImplementationClass 'cz.malohlava.VisTaskExecGraphPlugin'
-    pluginDescription 'Gradle plugin exporting task execution graph into .dot file.'
-    pluginLicenses 'Apache-2.0'
-    pluginTags 'gradle', 'plugin', 'graphviz', 'visteg'
-    authorId 'mmalohlava'
-    authorName 'Michal Malohlava'
-    authorEmail 'michal.malohlava@gmail.com'
-    projectUrl 'https://github.com/mmalohlava/gradle-visteg'
-    projectInceptionYear '2014'
-    done() // do not omit this
-}
-
-/* Credentials are stored in ~./gradle/gradle.properties file. */
-
-if (project.hasProperty('bintrayUser')) {
-    bintray {
-        user = "$bintrayUser"
-        key = "$bintrayApiKey"
-        pkg.repo = 'gradle-plugins'
     }
 }
 
