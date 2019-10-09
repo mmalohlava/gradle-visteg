@@ -1,5 +1,8 @@
 package cz.malohlava
 
+import org.gradle.api.internal.artifacts.transform.TransformationNode
+import org.gradle.execution.plan.Node
+
 import java.lang.reflect.Field
 
 import org.gradle.api.Plugin
@@ -148,6 +151,9 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
         q.add(entry)
         while (!q.empty) {
             def ti = q.remove()
+            if(!(ti instanceof TaskNode)) {
+                continue
+            }
             def tproject = ti.task.project
             def tname = ti.task.path
 
@@ -161,16 +167,18 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
                     : ti.dependencySuccessors.empty ? NodeKind.END : NodeKind.INNER
 
             ti.dependencySuccessors.each { succ ->
-                def sname = succ.task.path
-                if (edges.add(edgeHash(tname, sname))) {
-                    // Generate edge between two nodes
-                    sb.append("\"$tname\" -> \"$sname\"")
-                    if (colouredEdges) {
-                        sb.append(" [")
-                        if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
-                        sb.append("color=${tcolor}]")
+                if(succ instanceof TaskNode) {
+                    def sname = succ.task.path
+                    if (edges.add(edgeHash(tname, sname))) {
+                        // Generate edge between two nodes
+                        sb.append("\"$tname\" -> \"$sname\"")
+                        if (colouredEdges) {
+                            sb.append(" [")
+                            if (colorscheme != null) sb.append("colorscheme=\"${colorscheme}\",")
+                            sb.append("color=${tcolor}]")
+                        }
+                        sb.append(";").append(ls)
                     }
-                    sb.append(";").append(ls)
                 }
             }
             if (vistegExt.includeMustRunAfter) {
