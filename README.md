@@ -3,11 +3,14 @@ Gradle VisTEG
 
 [![][travis img]][travis]
 [![][license img]][license]
+[![][plugin img]][plugin]
 
 [travis]:https://travis-ci.org/mmalohlava/gradle-visteg
 [travis img]:https://travis-ci.org/mmalohlava/gradle-visteg.svg?branch=master
 [license]:LICENSE
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
+[plugin]:https://plugins.gradle.org/plugin/cz.malohlava.visteg
+[plugin img]:https://img.shields.io/badge/gradle_plugin-cz.malohlava.visteg-green?logo=gradle
 
 # Overview
 VisTeg is a Gradle plugin for exporting task execution graph as `.dot` file.
@@ -25,7 +28,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'cz.malohlava:visteg:1.0.4'
+        classpath 'gradle.plugin.cz.malohlava:visteg:1.0.5'
     }
 }
 
@@ -36,7 +39,7 @@ apply plugin: 'cz.malohlava.visteg'
 
 ```groovy
 plugins {
-  id 'cz.malohlava.visteg' version '1.0.4'
+  id 'cz.malohlava.visteg' version '1.0.5'
 }
 ```
 
@@ -74,7 +77,7 @@ Perform any Gradle task, for example `build`:
 ./gradlew build
 ```
 
-It will generate a `.dot` file containing graph description `build/reports/visteg.dot`.
+It will generate a `.dot` file in the directory `build/reports` containing execution plan graph for task `build`.
 
 ## Image generation
 The generated file can be post-processed via [Graphviz](http://www.graphviz.org) `dot` utility.
@@ -88,12 +91,10 @@ dot -Tpng ./visteg.dot -o ./visteg.dot.png
 For more information, please visit [Graphviz home page](http://www.graphviz.org).
 
 # Design
-The plugin installs itself as a listener to Gradle lifecycle via `gradle.taskGraph.whenReady`. During execution it obtains reference to task execution graph via reflection and performs a walk through the graph.
+The plugin installs itself as a listener to Gradle lifecycle via `gradle.taskGraph.whenReady`. 
+During execution it obtains reference to task execution graph via reflection and performs a walk through the graph.
 
 
 # Acknowledgements
 Based on idea published by Code Wader - http://codewader.blogspot.com/2011/11/show-gradle-dependencies-as-graphwiz.html
-
-
-
 
