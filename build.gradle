@@ -1,12 +1,13 @@
 plugins {
     id 'java-gradle-plugin'
     id 'groovy'
-    id 'com.gradle.plugin-publish' version '0.10.0'
+    id 'com.gradle.plugin-publish' version '0.10.1'
+    id 'idea'
 }
 
 dependencies {
-  compile gradleApi()
-  compile localGroovy()
+  implementation gradleApi()
+  implementation localGroovy()
 }
 
 repositories {
@@ -14,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.11'
+    testImplementation 'junit:junit:4.11'
 }
 
 /* Configure publishing into Gradle Plugin Portal. */

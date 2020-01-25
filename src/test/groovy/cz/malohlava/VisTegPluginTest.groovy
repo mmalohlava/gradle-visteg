@@ -8,7 +8,7 @@ import org.junit.Test
 class VisTegPluginTest {
 
     @Test
-    public void testPluginApplication() {
+    void testPluginApplication() {
         Project project = ProjectBuilder.builder().build()
         project.apply plugin: 'cz.malohlava.visteg'
 
