@@ -3,7 +3,7 @@ Gradle VisTEG
 
 [![][travis img]][travis]
 [![][license img]][license]
-[![][plugin img][plugin]
+[![][plugin img]][plugin]
 
 [travis]:https://travis-ci.org/mmalohlava/gradle-visteg
 [travis img]:https://travis-ci.org/mmalohlava/gradle-visteg.svg?branch=master
