@@ -9,7 +9,7 @@ Gradle VisTEG
 [travis img]:https://travis-ci.org/mmalohlava/gradle-visteg.svg?branch=master
 [license]:LICENSE
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
-[plugin]:Gradle Plugin
+[plugin]:https://plugins.gradle.org/plugin/cz.malohlava.visteg
 [plugin img]:https://img.shields.io/badge/gradle_plugin-cz.malohlava.visteg-green?logo=gradle
 
 # Overview
