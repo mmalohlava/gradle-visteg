@@ -25,7 +25,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'cz.malohlava:visteg:1.0.4'
+        classpath 'cz.malohlava:visteg:1.0.5'
     }
 }
 
@@ -36,7 +36,7 @@ apply plugin: 'cz.malohlava.visteg'
 
 ```groovy
 plugins {
-  id 'cz.malohlava.visteg' version '1.0.4'
+  id 'cz.malohlava.visteg' version '1.0.5'
 }
 ```
 
@@ -74,7 +74,7 @@ Perform any Gradle task, for example `build`:
 ./gradlew build
 ```
 
-It will generate a `.dot` file containing graph description `build/reports/visteg.dot`.
+It will generate a `.dot` file in the directory `build/reports` containing execution plan graph for task `build`.
 
 ## Image generation
 The generated file can be post-processed via [Graphviz](http://www.graphviz.org) `dot` utility.
@@ -88,12 +88,10 @@ dot -Tpng ./visteg.dot -o ./visteg.dot.png
 For more information, please visit [Graphviz home page](http://www.graphviz.org).
 
 # Design
-The plugin installs itself as a listener to Gradle lifecycle via `gradle.taskGraph.whenReady`. During execution it obtains reference to task execution graph via reflection and performs a walk through the graph.
+The plugin installs itself as a listener to Gradle lifecycle via `gradle.taskGraph.whenReady`. 
+During execution it obtains reference to task execution graph via reflection and performs a walk through the graph.
 
 
 # Acknowledgements
 Based on idea published by Code Wader - http://codewader.blogspot.com/2011/11/show-gradle-dependencies-as-graphwiz.html
-
-
-
 
