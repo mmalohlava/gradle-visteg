@@ -1,0 +1,7 @@
+digraph compile {
+colorscheme=puor11;
+rankdir=TB;
+splines=spline;
+":helloWorld" [shape="hexagon",colorscheme="puor11",style=filled,color=4];
+{ rank=same; ":helloWorld" }
+}
