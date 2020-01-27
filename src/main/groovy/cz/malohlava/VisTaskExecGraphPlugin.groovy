@@ -70,7 +70,6 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
 
         project.gradle.taskGraph.whenReady { g ->
 
-
             VisTegPluginExtension vistegExt = project.visteg
             // Unify parameters
             if (vistegExt.colorscheme == null ||
@@ -86,7 +85,7 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
                 // Already processed edges
                 def edges = [] as Set
                 // Create output buffer
-                def dotGraph = new StringBuilder("digraph compile { ").append(ls)
+                def dotGraph = new StringBuilder("digraph compile {").append(ls)
                 if (vistegExt.colorscheme != 'random') {
                     dotGraph.append("colorscheme=${vistegExt.colorscheme};$ls")
                 }
@@ -131,15 +130,18 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
     }
 
     private Set<TaskNode> getEntryTasks(ExecutionPlan tep) {
-        Field f = tep.class.getDeclaredField("entryTasks")
+        Field f = tep.class.getDeclaredField("entryNodes")
         f.accessible = true
-        Set<TaskNode> entryTasks = f.get(tep)
-        entryTasks
+        Set<Node> entryNodes = f.get(tep)
+        entryNodes.findAll { it instanceof TaskNode }.collect { (TaskNode) it}
     }
 
 
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
-                             StringBuilder sb, String ls, TaskNode entry, Set<Integer> edges) {
+                             StringBuilder sb,
+                             String ls,
+                             TaskNode entry,
+                             Set<Integer> edges) {
         def q = new LinkedList<TaskNode>()
         def seen = new HashSet<String>()
         boolean colouredNodes = vistegExt.colouredNodes
@@ -251,24 +253,24 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
 }
 
 class VisTegPluginExtension {
-    /** Enables the plugin for given project */
+    /** Enables the plugin for given project. */
     boolean enabled = true
-    /** Produces coloured edges */
+    /** Produces coloured edges. */
     boolean colouredNodes = true
-    /** Produces coloured nodes */
+    /** Produces coloured nodes. */
     boolean colouredEdges = true
-    /** Includes task ordering info mustRunAfter*/
+    /** Includes task ordering info mustRunAfter. */
     boolean includeMustRunAfter = true
-    /** Includes task ordering info shouldRunAfter*/
+    /** Includes task ordering info shouldRunAfter. */
     boolean includeShouldRunAfter = true
-    /** Gradle 4.+ does not call taskgraph.whenReady anymore if --dry-run is used, so set all tasks to enabled=false*/
+    /** Gradle 4.+ does not call taskgraph.whenReady anymore if --dry-run is used, so set all tasks to enabled=false. */
     boolean dryRun = false
-    /** Output file destination file */
+    /** Output file destination file. */
     String destination = 'build/reports/visteg.dot'
     String exporter = 'dot'
     /** Name of used color scheme - see {@link "http://www.graphviz.org/content/color-names"} for possible values. */
     String colorscheme = 'spectral11'
-    /** Force node color, use -1 for semi-random generation*/
+    /** Force node color, use -1 for semi-random generation. */
     int color = -1
     /** Shape of inner node - see {@link "http://www.graphviz.org/content/node-shapes"} for possible values. */
     String nodeShape = 'box'
@@ -276,8 +278,8 @@ class VisTegPluginExtension {
     String startNodeShape = 'hexagon'
     /** Shape of end node - see {@link "http://www.graphviz.org/content/node-shapes"} for possible values. */
     String endNodeShape = 'doubleoctagon'
-    /** Sets direction of graph layout. {@link "http://www.graphviz.org/doc/info/attrs.html#a:rankdir"}  for possible values.*/
+    /** Sets direction of graph layout. {@link "http://www.graphviz.org/doc/info/attrs.html#a:rankdir"} for possible values. */
     String rankdir = 'TB'
-    /** Controls how, and if, edges are represented. {@link "http://www.graphviz.org/doc/info/attrs.html#a:splines"}  for possible values.*/
+    /** Controls how, and if, edges are represented. {@link "http://www.graphviz.org/doc/info/attrs.html#a:splines"} for possible values.*/
     String splines = 'spline'
 }

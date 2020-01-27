@@ -15,10 +15,42 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.11'
+    testImplementation('junit:junit:4.11')
 }
 
-/* Configure publishing into Gradle Plugin Portal. */
+/**
+ * Configure functional testing.
+ */
+sourceSets {
+    funcTest {
+        groovy {
+            srcDir file('src/funcTest/groovy')
+        }
+        resources {
+            srcDir file('src/funcTest/resources')
+        }
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+task funcTest(type: Test) {
+    testClassesDirs = sourceSets.funcTest.output.classesDirs
+    classpath = sourceSets.funcTest.runtimeClasspath
+}
+
+check.dependsOn funcTest
+
+dependencies {
+    funcTestImplementation('org.spockframework:spock-core:1.3-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
+}
+
+
+/*
+ * Configure publication into Gradle Plugin Portal.
+ */
 pluginBundle {
     website = 'https://github.com/mmalohlava/gradle-visteg'
     vcsUrl = 'https://github.com/mmalohlava/gradle-visteg.git'
@@ -26,6 +58,8 @@ pluginBundle {
 }
 
 gradlePlugin {
+    testSourceSets sourceSets.funcTest
+
     plugins {
         vistegPlugin {
             id = 'cz.malohlava.visteg'
