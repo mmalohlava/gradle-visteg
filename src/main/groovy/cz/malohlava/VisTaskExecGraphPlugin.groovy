@@ -1,5 +1,6 @@
 package cz.malohlava
 
+import java.lang.NoSuchFieldException
 import java.lang.reflect.Field
 
 import org.gradle.api.Plugin
@@ -130,12 +131,19 @@ class VisTaskExecGraphPlugin implements Plugin<Project> {
     }
 
     private Set<TaskNode> getEntryTasks(ExecutionPlan tep) {
-        Field f = tep.class.getDeclaredField("entryNodes")
+        Field f = getEntryTasksField(tep);
         f.accessible = true
-        Set<Node> entryNodes = f.get(tep)
+        Set<TaskNode> entryNodes = f.get(tep)
         entryNodes.findAll { it instanceof TaskNode }.collect { (TaskNode) it}
     }
 
+    private Field getEntryTasksField(ExecutionPlan tep) {
+        try {
+            return tep.class.getDeclaredField("executionQueue")
+        } catch (NoSuchFieldException e) {
+            return tep.class.getDeclaredField("entryTasks")
+        }
+    }
 
     StringBuilder printGraph(VisTegPluginExtension vistegExt,
                              StringBuilder sb,
