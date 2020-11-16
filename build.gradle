@@ -35,6 +35,8 @@ sourceSets {
 }
 
 task funcTest(type: Test) {
+    description = "Functional tests."
+    group = "verification"
     testClassesDirs = sourceSets.funcTest.output.classesDirs
     classpath = sourceSets.funcTest.runtimeClasspath
 }
