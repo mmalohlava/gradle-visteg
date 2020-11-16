@@ -61,6 +61,14 @@ class VisTegPluginFuncTest extends Specification {
         actOutput == expOutput
 
         where:
-        gradleVersion << ['6.0.1', '6.1.1', '6.4']
+        gradleVersion << [
+            '6.0.1',
+            '6.1.1',
+            '6.2.1',
+            '6.3',
+            '6.4', '6.4.1',
+            '6.5', '6.5.1', 
+            '6.6', '6.6.1',
+            '6.7']
     }
 }
