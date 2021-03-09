@@ -58,6 +58,7 @@ visteg {
     startNodeShape = 'hexagon'
     endNodeShape   = 'doubleoctagon'
 }
+```
 
 The plugin supports the following options:
 ```
