@@ -61,7 +61,6 @@ visteg {
 ```
 
 The plugin supports the following options:
-```
  * `enabled` - Enables plugin for the project.
  * `colouredNodes` - Produces colored nodes.
  * `colouredEdges` - Produces colored edges.
